@@ -37,3 +37,4 @@ linux-build/*
 cocos2d/*
 bin/*
 Resources/*
+Classes/.*
