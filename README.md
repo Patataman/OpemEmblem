@@ -5,4 +5,7 @@ _Right now there isn't any graphic in the repository due I'm using actual Fire E
 Open source version of the TBS Fire Emblem.
 
 Language: C++
+
 Engine: Cocos2d
+
+Sprites: TexturePacker
