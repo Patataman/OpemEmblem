@@ -2,6 +2,7 @@
 #define __BATTLE_SCENE_H__
 
 #include "cocos2d.h"
+#include "Unit.h"
 
 class BattleScene : public cocos2d::Scene
 {

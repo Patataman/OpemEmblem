@@ -23,7 +23,8 @@ public:
 
     virtual void setAttr(short int hp, short int atk, short int movement, Vec2 pos, Item weapon);
     virtual void move(Vec2 dest);
-    virtual void changeState(bool state);
+    virtual void wait();
+    virtual void ready();
     virtual bool attack(Unit* enemy);
     //virtual void 
     //bool idkwhatelse();

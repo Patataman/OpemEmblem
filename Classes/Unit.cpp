@@ -31,9 +31,14 @@ void Unit::move(Vec2 dest)
 	Unit::position = dest;
 }
 
-void Unit::changeState(bool state)
+void Unit::wait()
 {
-	Unit:state = state;
+	Unit::state = false;
+}
+
+void Unit::ready()
+{
+	Unit::state = true;
 }
 
 bool Unit::attack(Unit* enemy)

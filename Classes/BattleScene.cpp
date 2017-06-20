@@ -1,63 +1,60 @@
 #include "BattleScene.h"
-#include "SimpleAudioEngine.h"
 #include "Unit.h"
+#include "SimpleAudioEngine.h"
 #include <iostream>
 
 USING_NS_CC;
+
+//windows size
+auto visibleSize = Director::getInstance()->getVisibleSize();
+Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
 Scene* BattleScene::createScene()
 {
     return BattleScene::create();
 }
 
-// on "init" you need to initialize your instance
+// main scene
 bool BattleScene::init()
 {
-    //////////////////////////////
-    // 1. super init first
+    //super init
     if ( !Scene::init() )
     {
         return false;
     }
 
-    // create a TMX map
+    //load the tile map
     auto tileMap = TMXTiledMap::create("TileMaps/test.tmx");
     //auto walkable_layer = tileMap->getLayer("walkable");
 
+    //scale x4
     tileMap->setScale(4);
+    // draws the tile map
     addChild(tileMap, 0, 0);
-
+    //draws the cells on the map
     this->drawGrill();
-
-    auto visibleSize = Director::getInstance()->getVisibleSize();
-    Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     auto prueba = Unit::create("sprites/test.png");
     prueba->setPosition(0,0);
     addChild(prueba, 0, 1);
 
-    /////////////////////////////
-    // 2. add a menu item with "X" image, which is clicked to quit the program
-    //    you may modify it.
-
-    /////////////////////////////
-    // 3. add your codes below...
-
-    // add a label shows "Hello World"
-    // create and initialize a label
-    
+    //Text label for debugging
     auto label = Label::createWithTTF("Battle 0.1a", "fonts/Marker Felt.ttf", 24);
     
     // position the label on the center of the screen
     label->setPosition(Vec2(origin.x + visibleSize.width/2,
                             origin.y + visibleSize.height - label->getContentSize().height));
 
-    // add the label as a child to this layer
+    //draw the text
     addChild(label, 1);
 
     return true;
 }
 
+/**
+    Draw the cells of the map.
+    Cell dimension is 16*16 pixels with x4 scaled.
+**/
 void BattleScene::drawGrill()
 {
     Color4F color(0, 0, 0.5, 0.5);
@@ -76,6 +73,10 @@ void BattleScene::drawGrill()
     addChild(draw_node, 1); 
 }
 
+/**
+    Unit's action menu.
+    Can move, attack (if enemy units at range) and wait.
+**/
 void BattleScene::actionMenu(Unit* unit)
 {
     Vector<MenuItem*> unitMenu;
@@ -86,10 +87,10 @@ void BattleScene::actionMenu(Unit* unit)
     //auto bagItem = MenuItemFont::create("Bag",
     //                                      NULL);
     auto waitItem = MenuItemFont::create("Wait",
-                                          unit->changeState(false));
+                                          CC_CALLBACK_0(Unit::wait, unit) );
     unitMenu.pushBack(moveItem);
     unitMenu.pushBack(attackItem);
-    unitMenu.pushBack(bagItem);
+    //unitMenu.pushBack(bagItem);
     unitMenu.pushBack(waitItem);
 
     // create menu, it's an autorelease object
