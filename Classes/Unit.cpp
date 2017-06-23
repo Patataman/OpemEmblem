@@ -45,4 +45,3 @@ bool Unit::attack(Unit* enemy)
 {
 	return false;
 }
-

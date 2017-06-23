@@ -5,6 +5,8 @@
 
 USING_NS_CC;
 
+auto spritecache = SpriteFrameCache::getInstance();
+spritecache->addSpriteFramesWithFile("test.plist");
 //windows size
 auto visibleSize = Director::getInstance()->getVisibleSize();
 Vec2 origin = Director::getInstance()->getVisibleOrigin();
@@ -34,9 +36,7 @@ bool BattleScene::init()
     //draws the cells on the map
     this->drawGrill();
 
-    auto prueba = Unit::create("sprites/test.png");
-    prueba->setPosition(0,0);
-    addChild(prueba, 0, 1);
+    this->loadAllyUnits(tileMap->getLayer("default"));
 
     //Text label for debugging
     auto label = Label::createWithTTF("Battle 0.1a", "fonts/Marker Felt.ttf", 24);
@@ -71,6 +71,30 @@ void BattleScene::drawGrill()
         draw_node->drawLine(Vec2(0, y), Vec2(500, y), color);
     }
     addChild(draw_node, 1); 
+}
+
+void BattleScene::loadAllyUnits(cocos2d::TMXLayer* layerMap)
+{
+    //Create archer sprite
+    Unit temp;
+    temp.unit = Sprite::createWithSpriteFrameName("archer_blue.png");
+    //Set unit position on a tile
+    temp.position = layerMap->getTileAt(Vec2(0,0))->setScale(4)->getPosition();
+    //Set sprite attr position
+    temp.unit->setPosition(temp.position);
+    //Add to allies list
+    this->allies.push_back(temp);
+
+    //Same here
+    temp.unit = Sprite::createWithSpriteFrameName("armorGuy_blue.png");
+    temp.position = layerMap->getTileAt(Vec2(0,1))->setScale(4)->getPosition();
+    temp.unit->setPosition(temp.position);
+    this->allies.push_back(temp);
+
+    //For each item in "allies" do the addChild thing
+    auto addToScene = [](Unit &u) { addChild(u->unit, 2); }; 
+    std::for_each(this->allies.begin(), this->allies.end(), addToScene);
+
 }
 
 /**
