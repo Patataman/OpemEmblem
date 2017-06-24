@@ -14,12 +14,12 @@ public:
 	short int hp, atk, movement;
 	bool state;        //available (true) unavailable (false)
 	Vec2 position;
-	Item weapon;
+	Item* weapon;
 
     //static Unit* create(std::string filename);
     Unit();
-    ~Unit();
-    virtual void setAttr(short int hp, short int atk, short int movement, Vec2 pos, Item weapon);
+    Unit(short int hp, short int atk, short int movement, Vec2 pos, Item* weapon);
+    virtual ~Unit();
     virtual void move(Vec2 dest);
     virtual void wait();
     virtual void ready();

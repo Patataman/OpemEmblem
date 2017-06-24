@@ -1,8 +1,18 @@
 #include "Item.h"
 
+Item::Item()
+{
+
+}
+
+Item::~Item()
+{
+
+}
+
 Item::Item(std::string name, short int dmg, short int hit)
 {
 	Item::name = name;
-	Item::dmg = dmg;
+	Item::damage = dmg;
 	Item::hit = hit;
 }

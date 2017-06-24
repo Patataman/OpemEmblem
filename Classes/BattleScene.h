@@ -14,7 +14,7 @@ public:
     virtual bool init();
     
     //// a selector callback
-    void drawGrill();
+    void drawGrid();
     void actionMenu(Unit* unit);
     void loadAllyUnits(cocos2d::TMXLayer* tileMap);
     //void changeToBattle(cocos2d::Ref* pSender);

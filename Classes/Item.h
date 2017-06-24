@@ -10,10 +10,13 @@ class Item
 {
 public:
 
+	Item();
+	Item(std::string name, short int dmg, short int hit);
+	~Item();
+	
 	std::string name;
 	short int damage, hit;
 
-	Item(std::string name, short int dmg, short int hit);
 };
 
 #endif // __ITEM_H__
