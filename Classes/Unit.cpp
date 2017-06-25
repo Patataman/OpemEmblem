@@ -7,7 +7,7 @@ Unit::Unit()
 	Unit::atk = 0;
 	Unit::movement = 0;
 	Unit::state = true;
-	Unit::position = NULL;
+	Unit::position = Vec2(0,0);
 	Unit::weapon = NULL;
 }
 
@@ -22,7 +22,8 @@ Unit::Unit(short int hp, short int atk, short int movement, Vec2 pos, Item* weap
 }
 
 Unit::~Unit(){
-	delete this;
+	delete Unit::unit;
+	delete Unit::weapon;
 }
 
 void Unit::move(Vec2 dest)

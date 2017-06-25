@@ -8,7 +8,7 @@ class BattleScene : public cocos2d::Scene
 {
 public:
 
-    std::vector<Unit> allies, enemies;
+    std::vector<Unit*> allies, enemies;
 
     static cocos2d::Scene* createScene();
     virtual bool init();
@@ -16,7 +16,7 @@ public:
     //// a selector callback
     void drawGrid();
     void actionMenu(Unit* unit);
-    void loadAllyUnits(cocos2d::TMXLayer* tileMap);
+    void loadAllyUnits(cocos2d::TMXLayer* layerMap);
     //void changeToBattle(cocos2d::Ref* pSender);
     //void changToOptions(cocos2d::Ref* pSender);
     //

@@ -35,7 +35,7 @@ bool BattleScene::init()
     this->drawGrid();
 
     auto spritePlist = SpriteFrameCache::getInstance();
-    spritePlist->addSpriteFramesWithFile("test.plist");
+    spritePlist->addSpriteFramesWithFile("sprite/test.plist");
 
     this->loadAllyUnits(tileMap->getLayer("default"));
 
@@ -76,27 +76,27 @@ void BattleScene::drawGrid()
 
 void BattleScene::loadAllyUnits(cocos2d::TMXLayer* layerMap)
 {
-    //Create archer sprite
-    Unit temp;
-    temp.unit = Sprite::createWithSpriteFrameName("archer_blue.png");
-    //Set unit position on a tile
-    temp.position = layerMap->getTileAt(Vec2(0,0))->getPosition();
-    //Set sprite attr position
-    temp.unit->setPosition(temp.position);
-    //Add to allies list
-    this->allies.push_back(temp);
-
-    //Same here
-    temp.unit = Sprite::createWithSpriteFrameName("armorGuy_blue.png");
-    temp.position = layerMap->getTileAt(Vec2(0,1))->getPosition();
-    temp.unit->setPosition(temp.position);
-    this->allies.push_back(temp);
-
-    //For each item in "allies" do the addChild thing
-    for (int i=0; i<this->allies.size(); i++) {
-        //addChild(Unit.unit, 2 (above the map and grid))
-        addChild(this->allies[i].unit, 2);
+    std::vector<std::string> alliesNames{"archer_blue.png", "armorGuy_blue.png"};
+    this->allies.resize(2);
+    for (int i=0; i<alliesNames.size(); i++)
+    {
+        this->allies[i] = new Unit;
+        //Create archer sprite
+        this->allies[i]->unit = Sprite::createWithSpriteFrameName(alliesNames[i]);
+        //Set unit position on a tile
+        this->allies[i]->position = layerMap->getTileAt(Vec2(0,i))->getPosition();
+        //Set sprite attr position
+        this->allies[i]->unit->setPosition(this->allies[i]->position);
+        //Scale the sprite
+        this->allies[i]->unit->setScale(4);
+        //Add to allies list
+        addChild(this->allies[i]->unit, 2);
     }
+    //For each item in "allies" do the addChild thing
+    //for (int i=0; i<this->allies.size(); i++) {
+    //    //addChild(Unit.unit, 2 (above the map and grid))
+    //    addChild(this->allies[i]->unit, 2);
+    //}
 }
 
 /**
