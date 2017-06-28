@@ -9,7 +9,8 @@ class BattleScene : public cocos2d::Scene
 public:
 
     std::vector<Unit*> allies, enemies;
-    Sprite* selector;
+    Unit selector;
+    TMXTiledMap* tileMap;
 
     static cocos2d::Scene* createScene();
     virtual bool init();

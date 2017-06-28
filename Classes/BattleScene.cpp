@@ -20,11 +20,11 @@ bool BattleScene::init()
     }
 
     //load the tile map
-    auto tileMap = TMXTiledMap::create("TileMaps/test.tmx");
+    this->tileMap = TMXTiledMap::create("TileMaps/test.tmx");
     //auto walkable_layer = tileMap->getLayer("walkable");
 
     //scale x4
-    tileMap->setScale(4);
+    this->tileMap->setScale(4);
     // draws the tile map
     addChild(tileMap, -1);
     //draws the cells on the map
@@ -34,14 +34,15 @@ bool BattleScene::init()
     spritePlist->addSpriteFramesWithFile("sprite/test.plist");
 
     //load ally units
-    this->loadAllyUnits(tileMap);
+    this->loadAllyUnits(this->tileMap);
     //load enemy units
-    this->loadEnemyUnits(tileMap);
+    this->loadEnemyUnits(this->tileMap);
 
-    this->selector = Sprite::create("sprite/selector.png");
-    this->selector->setScale(4);
-    this->selector->setPosition(this->allies[0]->position);
-    addChild(this->selector,1);
+    this->selector.unit = Sprite::create("sprite/selector.png");
+    this->selector.unit->setScale(4);
+    this->selector.position = this->allies[0]->position;
+    this->selector.unit->setPosition(this->allies[0]->position);
+    addChild(this->selector.unit,1);
 
 
     this->addKeyboardEvents();
@@ -170,11 +171,33 @@ void BattleScene::addKeyboardEvents()
 void BattleScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
 {
     log("Key with keycode %d pressed", keyCode);
+    cellSelector(keyCode);
 }
 
 void BattleScene::cellSelector(EventKeyboard::KeyCode keyCode)
 {
+    int max_x = this->tileMap->getMapSize().width;
+    int max_y = this->tileMap->getMapSize().height;
+    if ((keyCode == EventKeyboard::KeyCode::KEY_LEFT_ARROW || keyCode == EventKeyboard::KeyCode::KEY_A) &&
+        this->selector.position.x > 0)
+    {
 
+    }
+    if ((keyCode == EventKeyboard::KeyCode::KEY_RIGHT_ARROW || keyCode == EventKeyboard::KeyCode::KEY_D) &&
+        this->selector.position.x < max_x)
+    {
+
+    }
+    if ((keyCode == EventKeyboard::KeyCode::KEY_UP_ARROW || keyCode == EventKeyboard::KeyCode::KEY_W) &&
+        this->selector.position.y > 0)
+    {
+
+    }
+    if ((keyCode == EventKeyboard::KeyCode::KEY_DOWN_ARROW || keyCode == EventKeyboard::KeyCode::KEY_S) &&
+        this->selector.position.x < max_y)
+    {
+
+    }
 }
 
 void BattleScene::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event)
