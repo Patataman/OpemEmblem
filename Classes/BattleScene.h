@@ -9,17 +9,28 @@ class BattleScene : public cocos2d::Scene
 public:
 
     std::vector<Unit*> allies, enemies;
+    Sprite* selector;
 
     static cocos2d::Scene* createScene();
     virtual bool init();
     
-    //// a selector callback
+    //draws the line to define cells
     void drawGrid();
-    void actionMenu(Unit* unit);
+    //draws and create ally units
     void loadAllyUnits(cocos2d::TMXTiledMap* layerMap);
-    //void changeToBattle(cocos2d::Ref* pSender);
-    //void changToOptions(cocos2d::Ref* pSender);
-    //
+    //draws and create enemy units
+    void loadEnemyUnits(cocos2d::TMXTiledMap* layerMap);
+    //create and add all the keyboard events
+    void addKeyboardEvents();
+    //keyboard events on key pressed
+    void onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event);
+    //Unit's action menu
+    void actionMenu(Unit* unit);
+    //Cell selector actions (move and select units)
+    void cellSelector(EventKeyboard::KeyCode keyCode);
+    //--------------------//
+    //keyboard events on key released
+    void onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event);
     // implement the "static create()" method manually
     CREATE_FUNC(BattleScene);
 };

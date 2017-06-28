@@ -5,10 +5,6 @@
 
 USING_NS_CC;
 
-//windows size
-auto visibleSize = Director::getInstance()->getVisibleSize();
-Vec2 origin = Director::getInstance()->getVisibleOrigin();
-
 Scene* BattleScene::createScene()
 {
     return BattleScene::create();
@@ -30,24 +26,25 @@ bool BattleScene::init()
     //scale x4
     tileMap->setScale(4);
     // draws the tile map
-    addChild(tileMap, 0, 0);
+    addChild(tileMap, -1);
     //draws the cells on the map
     this->drawGrid();
 
     auto spritePlist = SpriteFrameCache::getInstance();
     spritePlist->addSpriteFramesWithFile("sprite/test.plist");
 
+    //load ally units
     this->loadAllyUnits(tileMap);
+    //load enemy units
+    this->loadEnemyUnits(tileMap);
 
-    //Text label for debugging
-    auto label = Label::createWithTTF("Battle 0.1a", "fonts/Marker Felt.ttf", 24);
-    
-    // position the label on the center of the screen
-    label->setPosition(Vec2(origin.x + visibleSize.width/2,
-                            origin.y + visibleSize.height - label->getContentSize().height));
+    this->selector = Sprite::create("sprite/selector.png");
+    this->selector->setScale(4);
+    this->selector->setPosition(this->allies[0]->position);
+    addChild(this->selector,1);
 
-    //draw the text
-    addChild(label, 1);
+
+    this->addKeyboardEvents();
 
     return true;
 }
@@ -71,7 +68,7 @@ void BattleScene::drawGrid()
         y = i * 16*4;
         draw_node->drawLine(Vec2(0, y), Vec2(500, y), color);
     }
-    addChild(draw_node, 1); 
+    addChild(draw_node); 
 }
 
 void BattleScene::loadAllyUnits(cocos2d::TMXTiledMap* layerMap)
@@ -90,7 +87,7 @@ void BattleScene::loadAllyUnits(cocos2d::TMXTiledMap* layerMap)
         //Set unit position on a tile -- tile attributes
         ValueMap& dict = obj.asValueMap();
         //Set position as the Tile center
-        Vec2 aux = layerMap->getLayer("default")->getPositionAt(
+        Vec2 aux = layerMap->getLayer("walkable")->getPositionAt(
                                             Vec2(dict["xPos"].asInt(), dict["yPos"].asInt()))
                                             + Vec2(layerMap->getTileSize().width/2,layerMap->getTileSize().height/2);
         // *4 because the map is scaled x4
@@ -98,7 +95,36 @@ void BattleScene::loadAllyUnits(cocos2d::TMXTiledMap* layerMap)
         //Set sprite attr position
         this->allies[i]->unit->setPosition(this->allies[i]->position);
         //Add to allies list
-        addChild(this->allies[i]->unit, 2);
+        addChild(this->allies[i]->unit);
+        i++;
+    }
+}
+
+void BattleScene::loadEnemyUnits(cocos2d::TMXTiledMap* layerMap)
+{
+    std::vector<std::string> enemiesNames{"archer_red.png", "armorGuy_red.png"};
+    this->enemies.resize(2);
+    auto& cells = layerMap->getObjectGroup("enemy")->getObjects();
+    int i = 0;
+    for (auto& obj : cells)
+    {
+        this->enemies[i] = new Unit;
+        //Create archer sprite
+        this->enemies[i]->unit = Sprite::createWithSpriteFrameName(enemiesNames[i]);
+        //Scale the sprite
+        this->enemies[i]->unit->setScale(4);
+        //Set unit position on a tile -- tile attributes
+        ValueMap& dict = obj.asValueMap();
+        //Set position as the Tile center
+        Vec2 aux = layerMap->getLayer("walkable")->getPositionAt(
+                                            Vec2(dict["xPos"].asInt(), dict["yPos"].asInt()))
+                                            + Vec2(layerMap->getTileSize().width/2,layerMap->getTileSize().height/2);
+        // *4 because the map is scaled x4
+        this->enemies[i]->position.set(aux*4);
+        //Set sprite attr position
+        this->enemies[i]->unit->setPosition(this->enemies[i]->position);
+        //Add to enemies list
+        addChild(this->enemies[i]->unit);
         i++;
     }
 }
@@ -125,7 +151,33 @@ void BattleScene::actionMenu(Unit* unit)
 
     // create menu, it's an autorelease object
     auto menu = Menu::createWithArray(unitMenu);
-    menu->setPosition(Vec2(visibleSize.width - menu->getContentSize().width/2,
-                      visibleSize.height - menu->getContentSize().height/2));
-    this->addChild(menu, 1);
+    menu->setPosition(Vec2(menu->getContentSize().width/2,
+                           menu->getContentSize().height/2));
+    addChild(menu, 1);
+}
+
+void BattleScene::addKeyboardEvents()
+{
+    // creating a keyboard event listener
+    auto listener = EventListenerKeyboard::create();
+    listener->onKeyPressed = CC_CALLBACK_2(BattleScene::onKeyPressed, this);
+    listener->onKeyReleased = CC_CALLBACK_2(BattleScene::onKeyReleased, this);
+
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+}
+
+// Implementation of the keyboard event callback function prototype
+void BattleScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
+{
+    log("Key with keycode %d pressed", keyCode);
+}
+
+void BattleScene::cellSelector(EventKeyboard::KeyCode keyCode)
+{
+
+}
+
+void BattleScene::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event)
+{
+    log("Key with keycode %d released", keyCode);
 }
