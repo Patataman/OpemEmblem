@@ -37,7 +37,7 @@ bool BattleScene::init()
     auto spritePlist = SpriteFrameCache::getInstance();
     spritePlist->addSpriteFramesWithFile("sprite/test.plist");
 
-    this->loadAllyUnits(tileMap->getLayer("default"));
+    this->loadAllyUnits(tileMap);
 
     //Text label for debugging
     auto label = Label::createWithTTF("Battle 0.1a", "fonts/Marker Felt.ttf", 24);
@@ -74,29 +74,33 @@ void BattleScene::drawGrid()
     addChild(draw_node, 1); 
 }
 
-void BattleScene::loadAllyUnits(cocos2d::TMXLayer* layerMap)
+void BattleScene::loadAllyUnits(cocos2d::TMXTiledMap* layerMap)
 {
     std::vector<std::string> alliesNames{"archer_blue.png", "armorGuy_blue.png"};
     this->allies.resize(2);
-    for (int i=0; i<alliesNames.size(); i++)
+    auto& cells = layerMap->getObjectGroup("ally")->getObjects();
+    int i = 0;
+    for (auto& obj : cells)
     {
         this->allies[i] = new Unit;
         //Create archer sprite
         this->allies[i]->unit = Sprite::createWithSpriteFrameName(alliesNames[i]);
-        //Set unit position on a tile
-        this->allies[i]->position = layerMap->getTileAt(Vec2(0,i))->getPosition();
-        //Set sprite attr position
-        this->allies[i]->unit->setPosition(this->allies[i]->position);
         //Scale the sprite
         this->allies[i]->unit->setScale(4);
+        //Set unit position on a tile -- tile attributes
+        ValueMap& dict = obj.asValueMap();
+        //Set position as the Tile center
+        Vec2 aux = layerMap->getLayer("default")->getPositionAt(
+                                            Vec2(dict["xPos"].asInt(), dict["yPos"].asInt()))
+                                            + Vec2(layerMap->getTileSize().width/2,layerMap->getTileSize().height/2);
+        // *4 because the map is scaled x4
+        this->allies[i]->position.set(aux*4);
+        //Set sprite attr position
+        this->allies[i]->unit->setPosition(this->allies[i]->position);
         //Add to allies list
         addChild(this->allies[i]->unit, 2);
+        i++;
     }
-    //For each item in "allies" do the addChild thing
-    //for (int i=0; i<this->allies.size(); i++) {
-    //    //addChild(Unit.unit, 2 (above the map and grid))
-    //    addChild(this->allies[i]->unit, 2);
-    //}
 }
 
 /**

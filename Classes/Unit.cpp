@@ -7,7 +7,7 @@ Unit::Unit()
 	Unit::atk = 0;
 	Unit::movement = 0;
 	Unit::state = true;
-	Unit::position = Vec2(0,0);
+	Unit::position.set(Vec2(0,0));
 	Unit::weapon = NULL;
 }
 

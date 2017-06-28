@@ -16,7 +16,7 @@ public:
     //// a selector callback
     void drawGrid();
     void actionMenu(Unit* unit);
-    void loadAllyUnits(cocos2d::TMXLayer* layerMap);
+    void loadAllyUnits(cocos2d::TMXTiledMap* layerMap);
     //void changeToBattle(cocos2d::Ref* pSender);
     //void changToOptions(cocos2d::Ref* pSender);
     //
