@@ -21,12 +21,12 @@ bool BattleScene::init()
 
     //load the tile map
     this->tileMap = TMXTiledMap::create("TileMaps/test.tmx");
-    //auto walkable_layer = tileMap->getLayer("walkable");
-
     //scale x4
     this->tileMap->setScale(4);
+    this->generateMap();
     // draws the tile map
     addChild(tileMap, -1);
+
     //draws the cells on the map
     this->drawGrid();
 
@@ -34,20 +34,47 @@ bool BattleScene::init()
     spritePlist->addSpriteFramesWithFile("sprite/test.plist");
 
     //load ally units
-    this->loadAllyUnits(this->tileMap);
+    this->loadAllyUnits();
     //load enemy units
-    this->loadEnemyUnits(this->tileMap);
+    this->loadEnemyUnits();
 
     this->selector.unit = Sprite::create("sprite/selector.png");
     this->selector.unit->setScale(4);
-    this->selector.position = this->allies[0]->position;
-    this->selector.unit->setPosition(this->allies[0]->position);
+    this->selector.position.set(this->allies[0]->position);
+    this->selector.unit->setPosition((this->map[this->allies[0]->position.y*
+                                                this->tileMap->getMapSize().width +
+                                                this->allies[0]->position.x]->position + 
+                                        Vec2(8,8))*4);
     addChild(this->selector.unit,1);
+
+    auto follow = Follow::create(this->selector.unit, Rect::ZERO);
+    this->runAction(follow);
 
 
     this->addKeyboardEvents();
 
     return true;
+}
+
+void BattleScene::generateMap()
+{
+    int max_x = this->tileMap->getMapSize().width;
+    int max_y = this->tileMap->getMapSize().height;
+    this->map.resize(max_x*max_y);
+
+    for(int x = 0; x< max_x; x++)
+    {
+        for(int y = 0; y< max_y; y++)
+        {
+            //i*m + j -> row * num_columns + column
+            //Needs to save the position because the Sprite 
+            //returned by getTileAt doesn't have a position value
+            this->map[y*max_x + x] = new Unit;
+            this->map[y*max_x + x]->unit = this->tileMap->getLayer("all")->getTileAt(Vec2(x, y));
+            this->map[y*max_x + x]->position = Vec2((int)this->tileMap->getLayer("all")->getPositionAt(Vec2(x, y)).x,
+                                                    (int)this->tileMap->getLayer("all")->getPositionAt(Vec2(x, y)).y);
+        }
+    }
 }
 
 /**
@@ -72,12 +99,13 @@ void BattleScene::drawGrid()
     addChild(draw_node); 
 }
 
-void BattleScene::loadAllyUnits(cocos2d::TMXTiledMap* layerMap)
+void BattleScene::loadAllyUnits()
 {
     std::vector<std::string> alliesNames{"archer_blue.png", "armorGuy_blue.png"};
     this->allies.resize(2);
-    auto& cells = layerMap->getObjectGroup("ally")->getObjects();
+    auto& cells = this->tileMap->getObjectGroup("ally")->getObjects();
     int i = 0;
+    Vec2 desviation = Vec2(this->tileMap->getTileSize().width/2,this->tileMap->getTileSize().height/2);
     for (auto& obj : cells)
     {
         this->allies[i] = new Unit;
@@ -88,25 +116,26 @@ void BattleScene::loadAllyUnits(cocos2d::TMXTiledMap* layerMap)
         //Set unit position on a tile -- tile attributes
         ValueMap& dict = obj.asValueMap();
         //Set position as the Tile center
-        Vec2 aux = layerMap->getLayer("walkable")->getPositionAt(
-                                            Vec2(dict["xPos"].asInt(), dict["yPos"].asInt()))
-                                            + Vec2(layerMap->getTileSize().width/2,layerMap->getTileSize().height/2);
+        
         // *4 because the map is scaled x4
-        this->allies[i]->position.set(aux*4);
+        this->allies[i]->position.set(Vec2(dict["xPos"].asInt(), dict["yPos"].asInt()));
         //Set sprite attr position
-        this->allies[i]->unit->setPosition(this->allies[i]->position);
+        
+        int mapPos = dict["yPos"].asInt()*this->tileMap->getMapSize().width + dict["xPos"].asInt();
+        this->allies[i]->unit->setPosition((this->map[mapPos]->position + desviation)*4);
         //Add to allies list
         addChild(this->allies[i]->unit);
         i++;
     }
 }
 
-void BattleScene::loadEnemyUnits(cocos2d::TMXTiledMap* layerMap)
+void BattleScene::loadEnemyUnits()
 {
     std::vector<std::string> enemiesNames{"archer_red.png", "armorGuy_red.png"};
     this->enemies.resize(2);
-    auto& cells = layerMap->getObjectGroup("enemy")->getObjects();
+    auto& cells = this->tileMap->getObjectGroup("enemy")->getObjects();
     int i = 0;
+    Vec2 desviation = Vec2(this->tileMap->getTileSize().width/2,this->tileMap->getTileSize().height/2);
     for (auto& obj : cells)
     {
         this->enemies[i] = new Unit;
@@ -117,13 +146,13 @@ void BattleScene::loadEnemyUnits(cocos2d::TMXTiledMap* layerMap)
         //Set unit position on a tile -- tile attributes
         ValueMap& dict = obj.asValueMap();
         //Set position as the Tile center
-        Vec2 aux = layerMap->getLayer("walkable")->getPositionAt(
-                                            Vec2(dict["xPos"].asInt(), dict["yPos"].asInt()))
-                                            + Vec2(layerMap->getTileSize().width/2,layerMap->getTileSize().height/2);
+        
         // *4 because the map is scaled x4
-        this->enemies[i]->position.set(aux*4);
+        this->enemies[i]->position.set(Vec2(dict["xPos"].asInt(), dict["yPos"].asInt()));
         //Set sprite attr position
-        this->enemies[i]->unit->setPosition(this->enemies[i]->position);
+        
+        int mapPos = dict["yPos"].asInt()*this->tileMap->getMapSize().width + dict["xPos"].asInt();
+        this->enemies[i]->unit->setPosition((this->map[mapPos]->position + desviation)*4);
         //Add to enemies list
         addChild(this->enemies[i]->unit);
         i++;
@@ -170,7 +199,6 @@ void BattleScene::addKeyboardEvents()
 // Implementation of the keyboard event callback function prototype
 void BattleScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
 {
-    log("Key with keycode %d pressed", keyCode);
     cellSelector(keyCode);
 }
 
@@ -178,29 +206,60 @@ void BattleScene::cellSelector(EventKeyboard::KeyCode keyCode)
 {
     int max_x = this->tileMap->getMapSize().width;
     int max_y = this->tileMap->getMapSize().height;
-    if ((keyCode == EventKeyboard::KeyCode::KEY_LEFT_ARROW || keyCode == EventKeyboard::KeyCode::KEY_A) &&
+    if ((keyCode == EventKeyboard::KeyCode::KEY_LEFT_ARROW ||
+            keyCode == EventKeyboard::KeyCode::KEY_A) &&
         this->selector.position.x > 0)
     {
-
+        this->selector.position.x -= 1;
+        this->selector.unit->setPosition((this->map[this->selector.position.y*
+                                                this->tileMap->getMapSize().width +
+                                                this->selector.position.x]->position + 
+                                        Vec2(8,8))*4);
     }
-    if ((keyCode == EventKeyboard::KeyCode::KEY_RIGHT_ARROW || keyCode == EventKeyboard::KeyCode::KEY_D) &&
-        this->selector.position.x < max_x)
+    if ((keyCode == EventKeyboard::KeyCode::KEY_RIGHT_ARROW ||
+            keyCode == EventKeyboard::KeyCode::KEY_D) &&
+        this->selector.position.x < max_x-1)
     {
-
+        this->selector.position.x += 1;
+        this->selector.unit->setPosition((this->map[this->selector.position.y*
+                                        this->tileMap->getMapSize().width +
+                                        this->selector.position.x]->position + 
+                                Vec2(8,8))*4);
     }
-    if ((keyCode == EventKeyboard::KeyCode::KEY_UP_ARROW || keyCode == EventKeyboard::KeyCode::KEY_W) &&
+    if ((keyCode == EventKeyboard::KeyCode::KEY_UP_ARROW ||
+            keyCode == EventKeyboard::KeyCode::KEY_W) &&
         this->selector.position.y > 0)
     {
-
+        this->selector.position.y -= 1;
+        this->selector.unit->setPosition((this->map[this->selector.position.y*
+                                        this->tileMap->getMapSize().width +
+                                        this->selector.position.x]->position + 
+                                Vec2(8,8))*4);
     }
-    if ((keyCode == EventKeyboard::KeyCode::KEY_DOWN_ARROW || keyCode == EventKeyboard::KeyCode::KEY_S) &&
-        this->selector.position.x < max_y)
+    if ((keyCode == EventKeyboard::KeyCode::KEY_DOWN_ARROW ||
+            keyCode == EventKeyboard::KeyCode::KEY_S) &&
+        this->selector.position.y < max_y-1)
     {
-
+        this->selector.position.y += 1;
+        this->selector.unit->setPosition((this->map[this->selector.position.y*
+                                            this->tileMap->getMapSize().width +
+                                            this->selector.position.x]->position + 
+                                    Vec2(8,8))*4);
     }
+
+    auto camera = this->getDefaultCamera();
+    Vec3 follow((int) (this->map[this->selector.position.y*
+                              this->tileMap->getMapSize().width +
+                              this->selector.position.x]->position.x + 
+                              8)*4,
+                (int) (this->map[this->selector.position.y*
+                              this->tileMap->getMapSize().width +
+                              this->selector.position.x]->position.y + 
+                              8)*4,
+                0);
+    camera->lookAt(follow, Vec3(0,0,0));
 }
 
 void BattleScene::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event)
 {
-    log("Key with keycode %d released", keyCode);
 }

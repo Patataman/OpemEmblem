@@ -11,16 +11,19 @@ public:
     std::vector<Unit*> allies, enemies;
     Unit selector;
     TMXTiledMap* tileMap;
+    std::vector<Unit*> map;
 
     static cocos2d::Scene* createScene();
     virtual bool init();
     
+    //generate the map
+    void generateMap();
     //draws the line to define cells
     void drawGrid();
     //draws and create ally units
-    void loadAllyUnits(cocos2d::TMXTiledMap* layerMap);
+    void loadAllyUnits();
     //draws and create enemy units
-    void loadEnemyUnits(cocos2d::TMXTiledMap* layerMap);
+    void loadEnemyUnits();
     //create and add all the keyboard events
     void addKeyboardEvents();
     //keyboard events on key pressed
