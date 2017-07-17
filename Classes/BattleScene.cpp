@@ -47,7 +47,11 @@ bool BattleScene::init()
                                         Vec2(8,8))*4);
     addChild(this->selector.unit,1);
 
-    auto follow = Follow::create(this->selector.unit, Rect::ZERO);
+    auto follow = Follow::create(this->selector.unit,
+                                Rect(0,
+                                     0,
+                                     this->tileMap->getMapSize().width*this->tileMap->getTileSize().width*4,
+                                     this->tileMap->getMapSize().height*this->tileMap->getTileSize().height*4));
     this->runAction(follow);
 
 
@@ -89,12 +93,16 @@ void BattleScene::drawGrid()
     for (short int i = 0; i < 8 + 1; i++)
     {
         x = i * 16*4;
-        draw_node->drawLine(Vec2(x, 0), Vec2(x, 500), color);
+        draw_node->drawLine(Vec2(x, 0),
+                            Vec2(x, this->tileMap->getMapSize().height*this->tileMap->getTileSize().height*4),
+                            color);
     }
     for (short int i = 0; i < 5 + 1; i++)
     {
         y = i * 16*4;
-        draw_node->drawLine(Vec2(0, y), Vec2(500, y), color);
+        draw_node->drawLine(Vec2(0, y),
+                            Vec2(this->tileMap->getMapSize().width*this->tileMap->getTileSize().width*4, y),
+                            color);
     }
     addChild(draw_node); 
 }
