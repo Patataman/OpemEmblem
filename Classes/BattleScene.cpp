@@ -19,6 +19,11 @@ bool BattleScene::init()
         return false;
     }
 
+    this->addChild(this->moveLayer, 0);
+    this->addChild(this->dontMoveLayer, 1);
+
+    this->onMenu = false;
+
     //load the tile map
     this->tileMap = TMXTiledMap::create("TileMaps/test.tmx");
     //scale x4
@@ -47,9 +52,10 @@ bool BattleScene::init()
                                         Vec2(8,8))*4);
     addChild(this->selector.unit,1);
 
+    //Follow::create(object to follow, map dimensions)
     auto follow = Follow::create(this->selector.unit,
                                 Rect(0,
-                                     0,
+                                     0, 
                                      this->tileMap->getMapSize().width*this->tileMap->getTileSize().width*4,
                                      this->tileMap->getMapSize().height*this->tileMap->getTileSize().height*4));
     this->runAction(follow);
@@ -173,6 +179,7 @@ void BattleScene::loadEnemyUnits()
 **/
 void BattleScene::actionMenu(Unit* unit)
 {
+
     Vector<MenuItem*> unitMenu;
     auto moveItem = MenuItemFont::create("Move",
                                           NULL);
@@ -187,11 +194,39 @@ void BattleScene::actionMenu(Unit* unit)
     //unitMenu.pushBack(bagItem);
     unitMenu.pushBack(waitItem);
 
+    //log("%f", Director::getInstance()->getVisibleSize().width);
+    //log("%f", Director::getInstance()->getWinSizeInPixels().width);
+    //log("%f", Director::getInstance()->getOpenGLView()->getVisibleSize().width);
+    //log("%f", Director::getInstance()->getOpenGLView()->getFrameSize().width);
+    //log("%f", Director::getInstance()->getOpenGLView()->getVisibleRect().size.width);
+
     // create menu, it's an autorelease object
     auto menu = Menu::createWithArray(unitMenu);
-    menu->setPosition(Vec2(menu->getContentSize().width/2,
-                           menu->getContentSize().height/2));
-    addChild(menu, 1);
+    menu->alignItemsInRows(3);
+    menu->alignItemsVertically();
+
+    menu->setPosition(convertToNodeSpace(
+                            Vec2(Director::getInstance()->getOpenGLView()->getFrameSize().width*0.8,
+                                 Director::getInstance()->getOpenGLView()->getFrameSize().height/2)));
+    menu->convertToNodeSpace(menu->getPosition());
+    menu->setTag(66);
+
+
+    // menu background
+    auto draw_node = DrawNode::create();
+    draw_node->drawSolidRect(convertToNodeSpace(
+                                  Vec2(Director::getInstance()->getOpenGLView()->getFrameSize().width*0.65,
+                                       Director::getInstance()->getOpenGLView()->getFrameSize().height*0.25)),
+                             convertToNodeSpace(
+                                  Vec2(Director::getInstance()->getOpenGLView()->getFrameSize().width*0.95,
+                                       Director::getInstance()->getOpenGLView()->getFrameSize().height*0.75)),
+                            Color4F(160,35,180,1));
+    draw_node->convertToNodeSpace(draw_node->getPosition());
+    draw_node->setTag(67);
+
+    addChild(draw_node,2);
+    addChild(menu,2);
+    this->onMenu = true;
 }
 
 void BattleScene::addKeyboardEvents()
@@ -207,7 +242,16 @@ void BattleScene::addKeyboardEvents()
 // Implementation of the keyboard event callback function prototype
 void BattleScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
 {
-    cellSelector(keyCode);
+    if (!this->onMenu) {
+        cellSelector(keyCode);
+    } else {
+        if (keyCode == EventKeyboard::KeyCode::KEY_ESCAPE)
+        {
+            this->onMenu = false;
+            removeChildByTag(66);
+            removeChildByTag(67);
+        }
+    }
 }
 
 void BattleScene::cellSelector(EventKeyboard::KeyCode keyCode)
@@ -255,17 +299,10 @@ void BattleScene::cellSelector(EventKeyboard::KeyCode keyCode)
                                     Vec2(8,8))*4);
     }
 
-    auto camera = this->getDefaultCamera();
-    Vec3 follow((int) (this->map[this->selector.position.y*
-                              this->tileMap->getMapSize().width +
-                              this->selector.position.x]->position.x + 
-                              8)*4,
-                (int) (this->map[this->selector.position.y*
-                              this->tileMap->getMapSize().width +
-                              this->selector.position.x]->position.y + 
-                              8)*4,
-                0);
-    camera->lookAt(follow, Vec3(0,0,0));
+    if (keyCode == EventKeyboard::KeyCode::KEY_ENTER)
+    {
+        actionMenu(NULL);
+    }
 }
 
 void BattleScene::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event)

@@ -12,6 +12,7 @@ public:
     Unit selector;
     TMXTiledMap* tileMap;
     std::vector<Unit*> map;
+    bool onMenu;
 
     static cocos2d::Scene* createScene();
     virtual bool init();

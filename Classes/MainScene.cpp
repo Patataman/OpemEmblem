@@ -45,6 +45,7 @@ bool MainScene::init()
     //                    menu->getContentSize().height/2));
     menu->alignItemsInRows(3);
     menu->alignItemsVertically();
+
     this->addChild(menu, 1);
 
     /////////////////////////////
