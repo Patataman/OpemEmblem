@@ -19,10 +19,8 @@ bool BattleScene::init()
         return false;
     }
 
-    this->addChild(this->moveLayer, 0);
-    this->addChild(this->dontMoveLayer, 1);
-
     this->onMenu = false;
+    this->turn = true;
 
     //load the tile map
     this->tileMap = TMXTiledMap::create("TileMaps/test.tmx");
@@ -174,25 +172,51 @@ void BattleScene::loadEnemyUnits()
 }
 
 /**
+    Change turn and make things
+**/
+void BattleScene::changeTurn()
+{
+    if (this->turn)
+    {
+
+    } else
+    {
+
+    }
+    this->turn = !this->turn;
+}
+
+/**
     Unit's action menu.
     Can move, attack (if enemy units at range) and wait.
 **/
-void BattleScene::actionMenu(Unit* unit)
+void BattleScene::actionMenu(Unit* unit, Unit* enemy)
 {
-
     Vector<MenuItem*> unitMenu;
     auto moveItem = MenuItemFont::create("Move",
-                                          NULL);
+                                          CC_CALLBACK_0(Unit::move, unit, Vec2(0,0)) );
     auto attackItem = MenuItemFont::create("Attack",
-                                          NULL);
+                                          CC_CALLBACK_0(Unit::attack, unit, enemy) );
     //auto bagItem = MenuItemFont::create("Bag",
     //                                      NULL);
     auto waitItem = MenuItemFont::create("Wait",
-                                          CC_CALLBACK_0(Unit::wait, unit) );
+                                          CC_CALLBACK_0(Unit::wait, this->allies[0]) );
+    auto passItem = MenuItemFont::create("Pass",
+                                          CC_CALLBACK_0(BattleScene::changeTurn, this) );
+    if (unit == NULL)
+    {
+        moveItem->setEnabled(false);
+        if (enemy == NULL)
+        {
+            attackItem->setEnabled(false);
+        }
+        //waitItem->setEnabled(false);
+    }
     unitMenu.pushBack(moveItem);
     unitMenu.pushBack(attackItem);
     //unitMenu.pushBack(bagItem);
     unitMenu.pushBack(waitItem);
+    unitMenu.pushBack(passItem);
 
     //log("%f", Director::getInstance()->getVisibleSize().width);
     //log("%f", Director::getInstance()->getWinSizeInPixels().width);
@@ -202,7 +226,7 @@ void BattleScene::actionMenu(Unit* unit)
 
     // create menu, it's an autorelease object
     auto menu = Menu::createWithArray(unitMenu);
-    menu->alignItemsInRows(3);
+    menu->alignItemsInRows(4);
     menu->alignItemsVertically();
 
     menu->setPosition(convertToNodeSpace(
@@ -242,9 +266,11 @@ void BattleScene::addKeyboardEvents()
 // Implementation of the keyboard event callback function prototype
 void BattleScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
 {
-    if (!this->onMenu) {
+    if (!this->onMenu)
+    {
         cellSelector(keyCode);
-    } else {
+    } else
+    {
         if (keyCode == EventKeyboard::KeyCode::KEY_ESCAPE)
         {
             this->onMenu = false;
@@ -301,7 +327,7 @@ void BattleScene::cellSelector(EventKeyboard::KeyCode keyCode)
 
     if (keyCode == EventKeyboard::KeyCode::KEY_ENTER)
     {
-        actionMenu(NULL);
+        actionMenu(NULL, NULL);
     }
 }
 

@@ -12,7 +12,7 @@ public:
     Unit selector;
     TMXTiledMap* tileMap;
     std::vector<Unit*> map;
-    bool onMenu;
+    bool onMenu, turn;
 
     static cocos2d::Scene* createScene();
     virtual bool init();
@@ -21,6 +21,8 @@ public:
     void generateMap();
     //draws the line to define cells
     void drawGrid();
+    //Change to the other player
+    void changeTurn();
     //draws and create ally units
     void loadAllyUnits();
     //draws and create enemy units
@@ -30,7 +32,7 @@ public:
     //keyboard events on key pressed
     void onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event);
     //Unit's action menu
-    void actionMenu(Unit* unit);
+    void actionMenu(Unit* unit, Unit* enemy);
     //Cell selector actions (move and select units)
     void cellSelector(EventKeyboard::KeyCode keyCode);
     //--------------------//
