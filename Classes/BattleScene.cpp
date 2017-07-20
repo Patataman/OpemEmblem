@@ -198,15 +198,15 @@ void BattleScene::actionMenu(Unit* unit, Unit* enemy)
     auto attackItem = MenuItemFont::create("Attack",
                                           CC_CALLBACK_0(Unit::attack, unit, enemy) );
     //auto bagItem = MenuItemFont::create("Bag",
-    //                                      NULL);
+    //                                      nullptr);
     auto waitItem = MenuItemFont::create("Wait",
                                           CC_CALLBACK_0(Unit::wait, this->allies[0]) );
     auto passItem = MenuItemFont::create("Pass",
                                           CC_CALLBACK_0(BattleScene::changeTurn, this) );
-    if (unit == NULL)
+    if (unit == nullptr)
     {
         moveItem->setEnabled(false);
-        if (enemy == NULL)
+        if (enemy == nullptr)
         {
             attackItem->setEnabled(false);
         }
@@ -226,7 +226,7 @@ void BattleScene::actionMenu(Unit* unit, Unit* enemy)
 
     // create menu, it's an autorelease object
     auto menu = Menu::createWithArray(unitMenu);
-    menu->alignItemsInRows(4);
+    menu->alignItemsInRows(unitMenu.size());
     menu->alignItemsVertically();
 
     menu->setPosition(convertToNodeSpace(
@@ -256,11 +256,16 @@ void BattleScene::actionMenu(Unit* unit, Unit* enemy)
 void BattleScene::addKeyboardEvents()
 {
     // creating a keyboard event listener
-    auto listener = EventListenerKeyboard::create();
-    listener->onKeyPressed = CC_CALLBACK_2(BattleScene::onKeyPressed, this);
-    listener->onKeyReleased = CC_CALLBACK_2(BattleScene::onKeyReleased, this);
+    auto listenerKeyboard = EventListenerKeyboard::create();
+    listenerKeyboard->onKeyPressed = CC_CALLBACK_2(BattleScene::onKeyPressed, this);
+    listenerKeyboard->onKeyReleased = CC_CALLBACK_2(BattleScene::onKeyReleased, this);
 
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+    // creating a mouse event listener
+    auto listenerMouse = EventListenerMouse::create();
+    listenerMouse->onMouseUp = CC_CALLBACK_0(BattleScene::onMouseUp, this);
+
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listenerKeyboard, this);
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listenerMouse, this);
 }
 
 // Implementation of the keyboard event callback function prototype
@@ -276,6 +281,26 @@ void BattleScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
             this->onMenu = false;
             removeChildByTag(66);
             removeChildByTag(67);
+        }
+    }
+}
+
+// On mouse up events
+void BattleScene::onMouseUp()
+{
+    if (this->onMenu)
+    {
+        auto menu = getChildByTag(66);
+        for (int i=0; i<menu->getChildren().size(); i++)
+        {
+            MenuItem* nodo = (MenuItem*) menu->getChildren().at(i);
+            if (nodo->isRunning())
+            {
+                this->onMenu = false;
+                removeChildByTag(66);
+                removeChildByTag(67);
+                break;
+            }
         }
     }
 }
@@ -327,7 +352,7 @@ void BattleScene::cellSelector(EventKeyboard::KeyCode keyCode)
 
     if (keyCode == EventKeyboard::KeyCode::KEY_ENTER)
     {
-        actionMenu(NULL, NULL);
+        actionMenu(nullptr, nullptr);
     }
 }
 

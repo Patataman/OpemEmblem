@@ -29,15 +29,19 @@ public:
     void loadEnemyUnits();
     //create and add all the keyboard events
     void addKeyboardEvents();
-    //keyboard events on key pressed
-    void onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event);
     //Unit's action menu
     void actionMenu(Unit* unit, Unit* enemy);
     //Cell selector actions (move and select units)
     void cellSelector(EventKeyboard::KeyCode keyCode);
     //--------------------//
+    //keyboard events on key pressed
+    void onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event);
     //keyboard events on key released
     void onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event);
+    //mouse down events
+    //void onMouseDown(Event* event);
+    //mouse up events
+    void onMouseUp();
     // implement the "static create()" method manually
     CREATE_FUNC(BattleScene);
 };

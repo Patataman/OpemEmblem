@@ -2,13 +2,13 @@
 
 Unit::Unit()
 {
-    Unit::unit = NULL;
+    Unit::unit = nullptr;
     Unit::hp = 0;
     Unit::atk = 0;
     Unit::movement = 0;
     Unit::state = true;
     Unit::position.set(Vec2(0,0));
-    Unit::weapon = NULL;
+    Unit::weapon = nullptr;
 }
 
 Unit::Unit(short int hp, short int atk, short int movement, Vec2 pos, Item* weapon)
@@ -35,10 +35,15 @@ void Unit::wait()
 {
     Unit::state = false;
     auto gl_cache = GLProgramCache::getInstance();
+
+    if (gl_cache->getGLProgram("originalColorShader") == nullptr)
+    {
+        gl_cache->addGLProgram(Unit::unit->getGLProgram(), "originalColorShader");
+    }
+
     auto p = gl_cache->getGLProgram("grayscaleShader");
     if (p == nullptr)
     {
-        //prog = GLProgram::createWithByteArrays(gray.vsh, frag);
         p = new GLProgram();
         p->initWithFilenames("gray.vsh", "gray.fsh");
         p->bindAttribLocation(GLProgram::ATTRIBUTE_NAME_POSITION, GLProgram::VERTEX_ATTRIB_POSITION);
@@ -55,7 +60,14 @@ void Unit::wait()
 void Unit::ready()
 {
     Unit::state = true;
-    //Unit::unit->setGLProgram(GLProgram::SHADER_NAME_ETC1AS_POSITION_TEXTURE_GRAY);
+
+    auto gl_cache = GLProgramCache::getInstance();
+    if (gl_cache->getGLProgram("originalColorShader") != nullptr)
+    {
+        auto p = gl_cache->getGLProgram("originalColorShader");
+        auto programState = GLProgramState::create(p);
+        Unit::unit->setGLProgramState(programState);
+    }
 }
 
 bool Unit::attack(Unit* enemy)
