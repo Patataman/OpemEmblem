@@ -12,7 +12,14 @@ public:
     Unit selector;
     TMXTiledMap* tileMap;
     std::vector<Unit*> map;
-    bool onMenu, turn;
+    bool turn;
+    /*
+    0: Game interation
+    1: On menu
+    2: Moving unit
+    3: Attack state
+    */
+    short int state, rectsDrew;
 
     static cocos2d::Scene* createScene();
     virtual bool init();
@@ -30,9 +37,13 @@ public:
     //create and add all the keyboard events
     void addKeyboardEvents();
     //Unit's action menu
-    void actionMenu(Unit* unit, Unit* enemy);
+    void actionMenu(Unit* unit, bool enemy);
     //Cell selector actions (move and select units)
     void cellSelector(EventKeyboard::KeyCode keyCode);
+    //Move unit action
+    void moveUnit(Unit* unit);
+    //Attack unit action
+    void attackUnit(Unit* unit);
     //--------------------//
     //keyboard events on key pressed
     void onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event);

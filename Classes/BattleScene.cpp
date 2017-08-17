@@ -19,7 +19,8 @@ bool BattleScene::init()
         return false;
     }
 
-    this->onMenu = false;
+    this->state = 0;
+    this->rectsDrew = 0;
     this->turn = true;
 
     //load the tile map
@@ -125,15 +126,15 @@ void BattleScene::loadAllyUnits()
         this->allies[i]->unit = Sprite::createWithSpriteFrameName(alliesNames[i]);
         //Scale the sprite
         this->allies[i]->unit->setScale(4);
+        //Default weapon
+        this->allies[i]->weapon = new Item("Wooden Sword", 5, 75, 1);
         //Set unit position on a tile -- tile attributes
         ValueMap& dict = obj.asValueMap();
-        //Set position as the Tile center
-        
-        // *4 because the map is scaled x4
-        this->allies[i]->position.set(Vec2(dict["xPos"].asInt(), dict["yPos"].asInt()));
-        //Set sprite attr position
+        this->allies[i]->position.set(Vec2(dict["xPos"].asInt(), dict["yPos"].asInt()));        
         
         int mapPos = dict["yPos"].asInt()*this->tileMap->getMapSize().width + dict["xPos"].asInt();
+        //Set sprite attr position
+        // *4 because the map is scaled x4
         this->allies[i]->unit->setPosition((this->map[mapPos]->position + desviation)*4);
         //Add to allies list
         addChild(this->allies[i]->unit);
@@ -155,15 +156,15 @@ void BattleScene::loadEnemyUnits()
         this->enemies[i]->unit = Sprite::createWithSpriteFrameName(enemiesNames[i]);
         //Scale the sprite
         this->enemies[i]->unit->setScale(4);
+        //Default weapon
+        this->enemies[i]->weapon = new Item("Wooden Sword", 5, 75, 1);
         //Set unit position on a tile -- tile attributes
         ValueMap& dict = obj.asValueMap();
-        //Set position as the Tile center
-        
-        // *4 because the map is scaled x4
         this->enemies[i]->position.set(Vec2(dict["xPos"].asInt(), dict["yPos"].asInt()));
-        //Set sprite attr position
         
         int mapPos = dict["yPos"].asInt()*this->tileMap->getMapSize().width + dict["xPos"].asInt();
+        //Set sprite attr position
+        // *4 because the map is scaled x4
         this->enemies[i]->unit->setPosition((this->map[mapPos]->position + desviation)*4);
         //Add to enemies list
         addChild(this->enemies[i]->unit);
@@ -186,45 +187,189 @@ void BattleScene::changeTurn()
     this->turn = !this->turn;
 }
 
+
+//Move unit action
+void BattleScene::moveUnit(Unit* unit)
+{
+    log("MOVE");
+    int max_x = this->tileMap->getMapSize().width;
+    int max_y = this->tileMap->getMapSize().height;
+
+    for (int i=1; i<= unit->movement; i++)
+    {
+        for (int j=1; j<= unit->movement; j++)
+        {
+            Vec2 desviation = Vec2(this->tileMap->getTileSize().width/2,this->tileMap->getTileSize().height/2);
+            if (unit->position.x - i >= 0 && unit->position.y - j >= 0 &&
+                sqrt(pow(i, 2) + pow(j,2)) <= unit->movement)
+            {
+                int mapPos = (unit->position.y-j)*max_x + unit->position.x-i;
+
+                auto draw_node = DrawNode::create();
+                draw_node->drawSolidRect(Vec2(0,0),
+                                         Vec2(this->tileMap->getTileSize().width*4, this->tileMap->getTileSize().height*4),
+                                         Color4F(165,124,20,0.5));
+                draw_node->setTag(70);
+                draw_node->setPosition((this->map[mapPos]->position)*4);
+
+                this->rectsDrew++;
+
+                addChild(draw_node,-1);
+            }
+            if (unit->position.x + i < max_x && unit->position.y + j < max_y &&
+                sqrt(pow(i, 2) + pow(j,2)) <= unit->movement)
+            {
+                int mapPos = (unit->position.y+j)*max_x + unit->position.x+i;
+
+                auto draw_node = DrawNode::create();
+                draw_node->drawSolidRect(Vec2(0,0),
+                                         Vec2(this->tileMap->getTileSize().width*4, this->tileMap->getTileSize().height*4),
+                                         Color4F(165,124,20,0.5));
+                draw_node->setTag(70);
+                draw_node->setPosition((this->map[mapPos]->position)*4);
+
+                this->rectsDrew++;
+
+                addChild(draw_node,-1);
+            }
+            if (unit->position.x - i >= 0 && unit->position.y + j < max_y &&
+                sqrt(pow(i, 2) + pow(j,2)) <= unit->movement)
+            {
+                int mapPos = (unit->position.y+j)*max_x + unit->position.x-i;
+
+                auto draw_node = DrawNode::create();
+                draw_node->drawSolidRect(Vec2(0,0),
+                                         Vec2(this->tileMap->getTileSize().width*4, this->tileMap->getTileSize().height*4),
+                                         Color4F(165,124,20,0.5));
+                draw_node->setTag(70);
+                draw_node->setPosition((this->map[mapPos]->position)*4);
+
+                this->rectsDrew++;
+
+                addChild(draw_node,-1);
+            }
+            if (unit->position.x + i < max_x && unit->position.y - j >= 0 &&
+                sqrt(pow(i, 2) + pow(j,2)) <= unit->movement)
+            {
+                int mapPos = (unit->position.y-j)*max_x + unit->position.x+i;
+
+                auto draw_node = DrawNode::create();
+                draw_node->drawSolidRect(Vec2(0,0),
+                                         Vec2(this->tileMap->getTileSize().width*4, this->tileMap->getTileSize().height*4),
+                                         Color4F(165,124,20,0.5));
+                draw_node->setTag(70);
+                draw_node->setPosition((this->map[mapPos]->position)*4);
+
+                this->rectsDrew++;
+
+                addChild(draw_node,-1);
+            }
+        }
+    }
+    for (int i=1; i<= unit->movement; i++)
+    {
+        if (unit->position.x + i < max_x)
+        {
+            int mapPos = (unit->position.y)*max_x + unit->position.x+i;
+
+            auto draw_node = DrawNode::create();
+            draw_node->drawSolidRect(Vec2(0,0),
+                                     Vec2(this->tileMap->getTileSize().width*4, this->tileMap->getTileSize().height*4),
+                                     Color4F(165,124,20,0.5));
+            draw_node->setTag(70);
+            draw_node->setPosition((this->map[mapPos]->position)*4);
+
+            this->rectsDrew++;
+
+            addChild(draw_node,-1);
+        }
+        if (unit->position.x - i >= 0)
+        {
+            int mapPos = (unit->position.y)*max_x + unit->position.x-i;
+
+            auto draw_node = DrawNode::create();
+            draw_node->drawSolidRect(Vec2(0,0),
+                                     Vec2(this->tileMap->getTileSize().width*4, this->tileMap->getTileSize().height*4),
+                                     Color4F(165,124,20,0.5));
+            draw_node->setTag(70);
+            draw_node->setPosition((this->map[mapPos]->position)*4);
+
+            this->rectsDrew++;
+
+            addChild(draw_node,-1);
+        }
+        if (unit->position.y - i >= 0)
+        {
+            int mapPos = (unit->position.y-i)*max_x + unit->position.x;
+
+            auto draw_node = DrawNode::create();
+            draw_node->drawSolidRect(Vec2(0,0),
+                                     Vec2(this->tileMap->getTileSize().width*4, this->tileMap->getTileSize().height*4),
+                                     Color4F(165,124,20,0.5));
+            draw_node->setTag(70);
+            draw_node->setPosition((this->map[mapPos]->position)*4);
+
+            this->rectsDrew++;
+
+            addChild(draw_node,-1);
+        }
+        if (unit->position.y + i < max_y)
+        {
+            int mapPos = (unit->position.y+i)*max_x + unit->position.x;
+
+            auto draw_node = DrawNode::create();
+            draw_node->drawSolidRect(Vec2(0,0),
+                                     Vec2(this->tileMap->getTileSize().width*4, this->tileMap->getTileSize().height*4),
+                                     Color4F(165,124,20,0.5));
+            draw_node->setTag(70);
+            draw_node->setPosition((this->map[mapPos]->position)*4);
+
+            this->rectsDrew++;
+
+            addChild(draw_node,-1);
+        }
+    }
+    this->state = 2;
+}
+
+//Attack unit action
+void BattleScene::attackUnit(Unit* unit)
+{
+    this->state = 3;
+}
+
 /**
     Unit's action menu.
     Can move, attack (if enemy units at range) and wait.
 **/
-void BattleScene::actionMenu(Unit* unit, Unit* enemy)
+void BattleScene::actionMenu(Unit* unit, bool enemy)
 {
     Vector<MenuItem*> unitMenu;
     auto moveItem = MenuItemFont::create("Move",
-                                          CC_CALLBACK_0(Unit::move, unit, Vec2(0,0)) );
+                                          CC_CALLBACK_0(BattleScene::moveUnit, this, unit) );
     auto attackItem = MenuItemFont::create("Attack",
-                                          CC_CALLBACK_0(Unit::attack, unit, enemy) );
+                                          CC_CALLBACK_0(BattleScene::attackUnit, this, unit) );
     //auto bagItem = MenuItemFont::create("Bag",
     //                                      nullptr);
     auto waitItem = MenuItemFont::create("Wait",
-                                          CC_CALLBACK_0(Unit::wait, this->allies[0]) );
+                                          CC_CALLBACK_0(Unit::wait, unit) );
     auto passItem = MenuItemFont::create("Pass",
                                           CC_CALLBACK_0(BattleScene::changeTurn, this) );
     if (unit == nullptr)
     {
         moveItem->setEnabled(false);
-        if (enemy == nullptr)
-        {
-            attackItem->setEnabled(false);
-        }
-        //waitItem->setEnabled(false);
+        waitItem->setEnabled(false);
+    }
+    if (unit != nullptr && enemy)
+    {
+        unitMenu.pushBack(attackItem);
     }
     unitMenu.pushBack(moveItem);
-    unitMenu.pushBack(attackItem);
     //unitMenu.pushBack(bagItem);
     unitMenu.pushBack(waitItem);
     unitMenu.pushBack(passItem);
 
-    //log("%f", Director::getInstance()->getVisibleSize().width);
-    //log("%f", Director::getInstance()->getWinSizeInPixels().width);
-    //log("%f", Director::getInstance()->getOpenGLView()->getVisibleSize().width);
-    //log("%f", Director::getInstance()->getOpenGLView()->getFrameSize().width);
-    //log("%f", Director::getInstance()->getOpenGLView()->getVisibleRect().size.width);
-
-    // create menu, it's an autorelease object
+    //create menu, it's an autorelease object
     auto menu = Menu::createWithArray(unitMenu);
     menu->alignItemsInRows(unitMenu.size());
     menu->alignItemsVertically();
@@ -236,7 +381,7 @@ void BattleScene::actionMenu(Unit* unit, Unit* enemy)
     menu->setTag(66);
 
 
-    // menu background
+    //menu background
     auto draw_node = DrawNode::create();
     draw_node->drawSolidRect(convertToNodeSpace(
                                   Vec2(Director::getInstance()->getOpenGLView()->getFrameSize().width*0.65,
@@ -250,7 +395,7 @@ void BattleScene::actionMenu(Unit* unit, Unit* enemy)
 
     addChild(draw_node,2);
     addChild(menu,2);
-    this->onMenu = true;
+    this->state = 1;
 }
 
 void BattleScene::addKeyboardEvents()
@@ -268,17 +413,22 @@ void BattleScene::addKeyboardEvents()
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listenerMouse, this);
 }
 
-// Implementation of the keyboard event callback function prototype
+// Implementation of the keyboard event when key is pressed
 void BattleScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
 {
-    if (!this->onMenu)
+    if (this->state != 1)
     {
         cellSelector(keyCode);
+        if (keyCode == EventKeyboard::KeyCode::KEY_ESCAPE)
+        {
+            while (this->rectsDrew > 0) { removeChildByTag(70); this->rectsDrew--;}
+            this->state = 0;
+        }
     } else
     {
         if (keyCode == EventKeyboard::KeyCode::KEY_ESCAPE)
         {
-            this->onMenu = false;
+            this->state = 0;
             removeChildByTag(66);
             removeChildByTag(67);
         }
@@ -288,7 +438,7 @@ void BattleScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
 // On mouse up events
 void BattleScene::onMouseUp()
 {
-    if (this->onMenu)
+    if (this->state)
     {
         auto menu = getChildByTag(66);
         for (int i=0; i<menu->getChildren().size(); i++)
@@ -296,7 +446,6 @@ void BattleScene::onMouseUp()
             MenuItem* nodo = (MenuItem*) menu->getChildren().at(i);
             if (nodo->isRunning())
             {
-                this->onMenu = false;
                 removeChildByTag(66);
                 removeChildByTag(67);
                 break;
@@ -309,6 +458,7 @@ void BattleScene::cellSelector(EventKeyboard::KeyCode keyCode)
 {
     int max_x = this->tileMap->getMapSize().width;
     int max_y = this->tileMap->getMapSize().height;
+    //Move left
     if ((keyCode == EventKeyboard::KeyCode::KEY_LEFT_ARROW ||
             keyCode == EventKeyboard::KeyCode::KEY_A) &&
         this->selector.position.x > 0)
@@ -319,6 +469,7 @@ void BattleScene::cellSelector(EventKeyboard::KeyCode keyCode)
                                                 this->selector.position.x]->position + 
                                         Vec2(8,8))*4);
     }
+    //Move right
     if ((keyCode == EventKeyboard::KeyCode::KEY_RIGHT_ARROW ||
             keyCode == EventKeyboard::KeyCode::KEY_D) &&
         this->selector.position.x < max_x-1)
@@ -329,6 +480,7 @@ void BattleScene::cellSelector(EventKeyboard::KeyCode keyCode)
                                         this->selector.position.x]->position + 
                                 Vec2(8,8))*4);
     }
+    //Move up
     if ((keyCode == EventKeyboard::KeyCode::KEY_UP_ARROW ||
             keyCode == EventKeyboard::KeyCode::KEY_W) &&
         this->selector.position.y > 0)
@@ -339,6 +491,7 @@ void BattleScene::cellSelector(EventKeyboard::KeyCode keyCode)
                                         this->selector.position.x]->position + 
                                 Vec2(8,8))*4);
     }
+    //Move down
     if ((keyCode == EventKeyboard::KeyCode::KEY_DOWN_ARROW ||
             keyCode == EventKeyboard::KeyCode::KEY_S) &&
         this->selector.position.y < max_y-1)
@@ -350,9 +503,35 @@ void BattleScene::cellSelector(EventKeyboard::KeyCode keyCode)
                                     Vec2(8,8))*4);
     }
 
-    if (keyCode == EventKeyboard::KeyCode::KEY_ENTER)
+    //When Enter is pressed and state = 0:
+    if (keyCode == EventKeyboard::KeyCode::KEY_ENTER && this->state == 0)
     {
-        actionMenu(nullptr, nullptr);
+        log("state %d", this->state);
+        //Check if you're pressing Enter on an ally unit
+        Unit* ally = nullptr;
+        bool enemy = false;
+        for (int i=0; i<this->allies.size(); i++)
+        {
+            if (this->allies.at(i)->position == this->selector.position)
+            {
+                ally = this->allies.at(i);
+                break;
+            }
+        }
+        //If you find an ally, now check if there's a enemy near.
+        if (ally != nullptr)
+        {
+            for (int i=0; i<this->enemies.size(); i++)
+            {
+                if (sqrt(pow(ally->position.x - this->enemies.at(i)->position.x, 2) +
+                    pow(ally->position.y - this->enemies.at(i)->position.y,2) <= ally->weapon->range))
+                {
+                    enemy = true;
+                    break;
+                }
+            }
+        }
+        actionMenu(ally, enemy);
     }
 }
 

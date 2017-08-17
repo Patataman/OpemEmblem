@@ -24,8 +24,7 @@ public:
     virtual void wait();
     virtual void ready();
     virtual bool attack(Unit* enemy);
-    //virtual void 
-    //bool idkwhatelse();
+    virtual void changeShader(short int code);
 };
 
 #endif // __UNIT_H__

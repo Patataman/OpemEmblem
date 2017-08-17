@@ -11,11 +11,11 @@ class Item
 public:
 
 	Item();
-	Item(std::string name, short int dmg, short int hit);
+	Item(std::string name, short int dmg, short int hit, short int range);
 	~Item();
 	
 	std::string name;
-	short int damage, hit;
+	short int damage, hit, range;
 
 };
 
