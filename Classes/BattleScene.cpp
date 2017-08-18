@@ -1,7 +1,9 @@
 #include "BattleScene.h"
 #include "Unit.h"
 #include "SimpleAudioEngine.h"
+#include <math.h>
 #include <iostream>
+#include <sstream> //debug
 
 USING_NS_CC;
 
@@ -195,13 +197,14 @@ void BattleScene::moveUnit(Unit* unit)
     int max_x = this->tileMap->getMapSize().width;
     int max_y = this->tileMap->getMapSize().height;
 
+    //Diagonal
     for (int i=1; i<= unit->movement; i++)
     {
         for (int j=1; j<= unit->movement; j++)
         {
             Vec2 desviation = Vec2(this->tileMap->getTileSize().width/2,this->tileMap->getTileSize().height/2);
             if (unit->position.x - i >= 0 && unit->position.y - j >= 0 &&
-                sqrt(pow(i, 2) + pow(j,2)) <= unit->movement)
+                round(sqrt(pow(i, 2) + pow(j,2))) < unit->movement)
             {
                 int mapPos = (unit->position.y-j)*max_x + unit->position.x-i;
 
@@ -217,7 +220,7 @@ void BattleScene::moveUnit(Unit* unit)
                 addChild(draw_node,-1);
             }
             if (unit->position.x + i < max_x && unit->position.y + j < max_y &&
-                sqrt(pow(i, 2) + pow(j,2)) <= unit->movement)
+                round(sqrt(pow(i, 2) + pow(j,2))) < unit->movement)
             {
                 int mapPos = (unit->position.y+j)*max_x + unit->position.x+i;
 
@@ -233,7 +236,7 @@ void BattleScene::moveUnit(Unit* unit)
                 addChild(draw_node,-1);
             }
             if (unit->position.x - i >= 0 && unit->position.y + j < max_y &&
-                sqrt(pow(i, 2) + pow(j,2)) <= unit->movement)
+                round(sqrt(pow(i, 2) + pow(j,2))) < unit->movement)
             {
                 int mapPos = (unit->position.y+j)*max_x + unit->position.x-i;
 
@@ -249,7 +252,7 @@ void BattleScene::moveUnit(Unit* unit)
                 addChild(draw_node,-1);
             }
             if (unit->position.x + i < max_x && unit->position.y - j >= 0 &&
-                sqrt(pow(i, 2) + pow(j,2)) <= unit->movement)
+                round(sqrt(pow(i, 2) + pow(j,2))) < unit->movement)
             {
                 int mapPos = (unit->position.y-j)*max_x + unit->position.x+i;
 
@@ -263,9 +266,11 @@ void BattleScene::moveUnit(Unit* unit)
                 this->rectsDrew++;
 
                 addChild(draw_node,-1);
+
             }
         }
     }
+    //Vertical and horizontal
     for (int i=1; i<= unit->movement; i++)
     {
         if (unit->position.x + i < max_x)
@@ -419,7 +424,7 @@ void BattleScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
     if (this->state != 1)
     {
         cellSelector(keyCode);
-        if (keyCode == EventKeyboard::KeyCode::KEY_ESCAPE)
+        if (keyCode == EventKeyboard::KeyCode::KEY_ESCAPE && this->state == 2)
         {
             while (this->rectsDrew > 0) { removeChildByTag(70); this->rectsDrew--;}
             this->state = 0;
@@ -440,15 +445,18 @@ void BattleScene::onMouseUp()
 {
     if (this->state)
     {
+        log("mouseUp");
         auto menu = getChildByTag(66);
-        for (int i=0; i<menu->getChildren().size(); i++)
-        {
-            MenuItem* nodo = (MenuItem*) menu->getChildren().at(i);
-            if (nodo->isRunning())
+        if (menu != nullptr) {
+            for (int i=0; i<menu->getChildren().size(); i++)
             {
-                removeChildByTag(66);
-                removeChildByTag(67);
-                break;
+                MenuItem* nodo = (MenuItem*) menu->getChildren().at(i);
+                if (nodo->isRunning())
+                {
+                    removeChildByTag(66);
+                    removeChildByTag(67);
+                    break;
+                }
             }
         }
     }
